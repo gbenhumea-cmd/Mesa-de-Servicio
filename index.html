@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════
-// CSCO — Mesa de Servicio — Apps Script Backend v2
+// CSCO — Mesa de Servicio — Apps Script Backend v3
 // Google Sheet ID: 1PGtO2n13ZY2tO4ivaE7OqXhvQ6NiEAucUfqhl2jE0jg
 // ══════════════════════════════════════════════════════
 
@@ -71,7 +71,7 @@ function setConfig(clave, valor) {
 }
 
 function nuevoFolio() {
-  const n    = parseInt(getConfig('folioNum') || 1);
+  const n = parseInt(getConfig('folioNum') || 1);
   setConfig('folioNum', n + 1);
   return 'TKT-' + new Date().getFullYear() + '-' + String(n).padStart(4,'0');
 }
@@ -89,34 +89,32 @@ function err(msg) {
 }
 
 // ════════════════════════════════════════════════════
-// ROUTER — todo por GET para evitar CORS
+// ROUTER — cada acción viaja como parámetro GET
 // ════════════════════════════════════════════════════
 function doGet(e) {
   try {
     const action = e.parameter.action || '';
 
-    // Peticiones de lectura
     if (action === 'ping')       return ok('pong');
     if (action === 'getTickets') return getTickets();
 
-    // Peticiones de escritura enviadas como GET con data en base64
-    if (action === 'post') {
-      const raw  = e.parameter.data || '';
-      const json = decodeURIComponent(escape(Utilities.base64Decode(
-                     decodeURIComponent(raw),
-                     Utilities.Charset.UTF_8
-                   ).map(b => String.fromCharCode(b)).join('')));
-      const body = JSON.parse(json);
-      const act  = body.action || '';
-      if (act === 'crearTicket')      return crearTicket(body.ticket);
-      if (act === 'actualizarTicket') return actualizarTicket(body.ticket);
-      if (act === 'agregarNota')      return agregarNota(body.ticketId, body.nota);
-      return err('Accion desconocida: ' + act);
+    // Escritura: los datos viajan en el parámetro 'd' como JSON codificado en URL
+    if (action === 'crearTicket') {
+      const ticket = JSON.parse(decodeURIComponent(e.parameter.d || '{}'));
+      return crearTicket(ticket);
+    }
+    if (action === 'actualizarTicket') {
+      const ticket = JSON.parse(decodeURIComponent(e.parameter.d || '{}'));
+      return actualizarTicket(ticket);
+    }
+    if (action === 'agregarNota') {
+      const p       = JSON.parse(decodeURIComponent(e.parameter.d || '{}'));
+      return agregarNota(p.ticketId, p.nota);
     }
 
     return err('Accion no reconocida: ' + action);
-  } catch(e) {
-    return err(e.message + ' | ' + e.stack);
+  } catch(ex) {
+    return err(ex.message + ' | ' + ex.stack);
   }
 }
 
@@ -131,7 +129,6 @@ function getTickets() {
   const tRows = ht.getDataRange().getValues();
   const nRows = hn.getDataRange().getValues();
 
-  // Índice de notas
   const notasMap = {};
   for (let i = 1; i < nRows.length; i++) {
     const [ticketId, tipo, texto, autor, fecha] = nRows[i];
