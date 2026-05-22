@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>CSCO — Mesa de Servicio</title>
+<meta name="theme-color" content="#1a5276">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CSCO Mesa">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0d1117;
+  --s1:       #161b22;
+  --s2:       #1c2128;
+  --s3:       #21262d;
+  --border:   #30363d;
+  --border2:  #3d444d;
+  --accent:   #1f6feb;
+  --accent2:  #388bfd;
+  --ok:       #238636;
+  --ok2:      #2ea043;
+  --warn:     #9e6a03;
+  --warn2:    #d29922;
+  --danger:   #b62324;
+  --danger2:  #f85149;
+  --purple:   #6e40c9;
+  --purple2:  #a371f7;
+  --text:     #e6edf3;
+  --text2:    #8b949e;
+  --text3:    #484f58;
+  --radius:   8px;
+  --font:     'IBM Plex Sans', sans-serif;
+  --mono:     'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ══ LOGIN ══════════════════════════════════════════════ */
+#screen-login{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 60% at 20% 50%, #0d2045 0%, var(--bg) 60%);
+}
+.login-wrap{width:360px;}
+.login-brand{
+  display:flex;align-items:center;gap:10px;margin-bottom:32px;
+}
+.login-brand .ico{
+  width:36px;height:36px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:15px;color:#fff;letter-spacing:-1px;
+}
+.login-brand .name{font-size:17px;font-weight:600;letter-spacing:-.3px;}
+.login-brand .sub{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px;}
+.login-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;padding:28px;
+}
+.login-card h2{font-size:18px;font-weight:600;margin-bottom:4px;}
+.login-card .hint{font-size:12px;color:var(--text2);margin-bottom:24px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:11px;font-weight:500;color:var(--text2);margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{
+  width:100%;padding:8px 12px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;
+  outline:none;transition:border-color .15s;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent2);}
+.fg textarea{resize:vertical;min-height:80px;line-height:1.5;}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:var(--radius);border:none;
+  font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;
+  transition:opacity .15s,background .15s;
+}
+.btn:hover{opacity:.85;}
+.btn-primary{background:var(--accent);color:#fff;width:100%;justify-content:center;padding:10px;}
+.btn-ok{background:var(--ok);color:#fff;}
+.btn-ghost{background:var(--s3);color:var(--text2);border:1px solid var(--border);}
+.btn-danger{background:transparent;color:var(--danger2);border:1px solid var(--danger);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-purple{background:var(--purple);color:#fff;}
+.demo-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:14px;line-height:1.7;font-family:var(--mono);}
+
+/* ══ LAYOUT ══════════════════════════════════════════════ */
+#screen-app{display:none;flex-direction:column;min-height:100vh;}
+
+/* topbar */
+.topbar{
+  height:52px;background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;position:sticky;top:0;z-index:100;
+}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-brand{font-size:14px;font-weight:600;letter-spacing:-.2px;}
+.tb-sep{color:var(--text3);font-size:16px;}
+.tb-section{font-size:13px;color:var(--text2);}
+.role-badge{
+  font-size:10px;font-family:var(--mono);font-weight:500;letter-spacing:.5px;
+  padding:2px 9px;border-radius:20px;text-transform:uppercase;
+}
+.rb-agente  {background:rgba(31,111,235,.15);color:var(--accent2);border:1px solid rgba(31,111,235,.3);}
+.rb-supervisor{background:rgba(110,64,201,.15);color:var(--purple2);border:1px solid rgba(110,64,201,.3);}
+.rb-tecnico {background:rgba(35,134,54,.15);color:#3fb950;border:1px solid rgba(35,134,54,.3);}
+.rb-config  {background:rgba(248,81,73,.15);color:#f85149;border:1px solid rgba(248,81,73,.3);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-user{font-size:12px;color:var(--text2);}
+.btn-exit{
+  background:none;border:1px solid var(--border);color:var(--text2);
+  padding:4px 12px;border-radius:var(--radius);font-family:var(--font);font-size:12px;cursor:pointer;
+}
+.btn-exit:hover{border-color:var(--text2);color:var(--text);}
+
+/* sidebar + content */
+.layout{display:flex;flex:1;}
+.sidebar{
+  width:200px;background:var(--s1);border-right:1px solid var(--border);
+  padding:16px 8px;flex-shrink:0;
+}
+.nav-group{margin-bottom:20px;}
+.nav-label{font-size:10px;color:var(--text3);font-weight:500;letter-spacing:.8px;text-transform:uppercase;padding:0 8px;margin-bottom:6px;}
+.nav-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:6px;cursor:pointer;
+  color:var(--text2);font-size:13px;font-weight:400;transition:all .15s;
+  margin-bottom:2px;
+}
+.nav-item:hover{background:var(--s3);color:var(--text);}
+.nav-item.active{background:rgba(31,111,235,.12);color:var(--accent2);}
+.nav-item .ni-icon{font-size:14px;width:18px;text-align:center;}
+.nav-badge{
+  margin-left:auto;background:var(--danger2);color:#fff;
+  font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:10px;
+}
+
+.content{flex:1;padding:24px;overflow-y:auto;max-height:calc(100vh - 52px);}
+.page{display:none;}
+.page.active{display:block;}
+
+/* ══ STATS ═══════════════════════════════════════════════ */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+}
+.stat .n{font-size:30px;font-weight:600;font-family:var(--mono);line-height:1;}
+.stat .l{font-size:11px;color:var(--text2);margin-top:4px;}
+.n-open{color:var(--warn2);}
+.n-prog{color:var(--accent2);}
+.n-done{color:#3fb950;}
+.n-cls {color:var(--text3);}
+
+/* ══ TABLA TICKETS ══════════════════════════════════════ */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.page-title{font-size:16px;font-weight:600;}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.fbtn{
+  padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;
+  background:var(--s2);border:1px solid var(--border);color:var(--text2);
+  transition:all .15s;font-family:var(--font);
+}
+.fbtn.active,.fbtn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+.tkt-table{width:100%;border-collapse:collapse;}
+.tkt-table th{
+  text-align:left;font-size:11px;font-weight:500;color:var(--text2);
+  letter-spacing:.4px;text-transform:uppercase;padding:8px 12px;
+  border-bottom:1px solid var(--border);background:var(--s1);
+}
+.tkt-table th:first-child{border-radius:var(--radius) 0 0 0;}
+.tkt-table th:last-child{border-radius:0 var(--radius) 0 0;}
+.tkt-row{
+  border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background .12s;
+}
+.tkt-row:hover{background:var(--s2);}
+.tkt-row td{padding:10px 12px;font-size:13px;vertical-align:middle;}
+.folio{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.tkt-title{font-weight:500;margin-bottom:2px;}
+.tkt-cliente{font-size:11px;color:var(--text2);}
+.empty{text-align:center;padding:48px;color:var(--text3);}
+.empty .e-icon{font-size:32px;margin-bottom:10px;}
+
+/* badges */
+.badge{
+  display:inline-block;font-size:10px;font-family:var(--mono);font-weight:500;
+  padding:2px 8px;border-radius:4px;white-space:nowrap;
+}
+.b-abierto {background:rgba(210,153,34,.12);color:var(--warn2);border:1px solid rgba(210,153,34,.2);}
+.b-proceso  {background:rgba(56,139,253,.12);color:var(--accent2);border:1px solid rgba(56,139,253,.2);}
+.b-resuelto {background:rgba(63,185,80,.12);color:#3fb950;border:1px solid rgba(63,185,80,.2);}
+.b-cerrado  {background:rgba(72,79,88,.12);color:var(--text3);border:1px solid rgba(72,79,88,.2);}
+.b-alta  {background:rgba(248,81,73,.12);color:var(--danger2);}
+.b-media {background:rgba(210,153,34,.1);color:var(--warn2);}
+.b-baja  {background:rgba(63,185,80,.1);color:#3fb950;}
+.b-sin   {background:var(--s3);color:var(--text3);}
+
+/* ══ FORMULARIO NUEVO TICKET ════════════════════════════ */
+.form-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;max-width:760px;
+}
+.form-card h3{font-size:15px;font-weight:600;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-full{grid-column:1/-1;}
+.form-actions{margin-top:20px;display:flex;gap:10px;}
+
+/* ══ MODAL ═══════════════════════════════════════════════ */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.75);z-index:300;
+  align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;
+}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;width:100%;max-width:600px;margin:auto;
+  animation:fadeUp .2s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.modal-hdr{
+  padding:18px 22px 14px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;
+}
+.modal-hdr h3{font-size:15px;font-weight:600;}
+.modal-folio{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px;}
+.btn-cls{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;line-height:1;padding:2px 4px;}
+.btn-cls:hover{color:var(--text);}
+.modal-body{padding:18px 22px;}
+.m-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.m-section{margin-bottom:16px;}
+.m-label{font-size:11px;color:var(--text2);font-weight:500;letter-spacing:.3px;text-transform:uppercase;margin-bottom:5px;}
+.m-val{font-size:13px;line-height:1.5;}
+.m-box{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:10px 12px;font-size:13px;
+  color:var(--text2);line-height:1.6;
+}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+
+/* historial */
+.history{margin-bottom:16px;}
+.history h4{font-size:12px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
+.note{padding:9px 12px;border-radius:6px;margin-bottom:6px;font-size:12px;line-height:1.5;}
+.note-agente{background:rgba(31,111,235,.07);border-left:3px solid var(--accent);}
+.note-supervisor{background:rgba(110,64,201,.07);border-left:3px solid var(--purple);}
+.note-sistema{background:var(--bg);border-left:3px solid var(--border);color:var(--text2);}
+.note-tecnico{background:rgba(35,134,54,.07);border-left:3px solid var(--ok2);}
+.note-meta{font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono);}
+
+/* controles modal */
+.m-controls{border-top:1px solid var(--border);padding-top:16px;margin-top:4px;}
+.m-controls h4{font-size:12px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;}
+.ctrl-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.btn-ot{
+  width:100%;padding:9px;border-radius:var(--radius);border:1px dashed var(--ok2);
+  background:rgba(35,134,54,.06);color:#3fb950;font-family:var(--font);font-size:13px;
+  font-weight:500;cursor:pointer;margin-bottom:12px;transition:all .15s;
+}
+.btn-ot:hover{background:rgba(35,134,54,.14);border-style:solid;}
+
+/* Orden de Trabajo */
+.ot-card{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:16px;margin-bottom:12px;
+}
+.ot-card h4{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--accent2);}
+.ot-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* ══ TOAST ═══════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:8px;padding:10px 16px;font-size:13px;
+  display:flex;align-items:center;gap:8px;
+  transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.t-ok{border-color:var(--ok2);color:#3fb950;}
+.toast.t-err{border-color:var(--danger2);color:var(--danger2);}
+
+/* ══ PRINT OT ════════════════════════════════════════════ */
+#ot-print{display:none;}
+@media print{
+  body>*{display:none!important;}
+  #ot-print{
+    display:block!important;font-family:'IBM Plex Sans',sans-serif;
+    color:#000;padding:24px;font-size:12px;
+  }
+  .ot-print-header{border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px;}
+  .ot-print-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+  .ot-field label{font-size:10px;font-weight:600;text-transform:uppercase;display:block;margin-bottom:2px;}
+  .ot-field span{border-bottom:1px solid #ccc;display:block;padding-bottom:4px;min-height:20px;}
+  .ot-desc{border:1px solid #ccc;padding:8px;min-height:60px;margin-bottom:12px;}
+  .ot-firma{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px;}
+  .ot-firma-box{border-top:1px solid #000;padding-top:6px;font-size:10px;}
+}
+
+@media(max-width:700px){
+  .sidebar{display:none;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .m-grid{grid-template-columns:1fr;}
+  .ot-row{grid-template-columns:1fr;}
+}
+/* ══ CONFIG PANEL ════════════════════════════════════ */
+.cfg-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:600px;margin-bottom:16px;}
+.cfg-card h3{font-size:14px;font-weight:600;margin-bottom:4px;}
+.cfg-card .hint{font-size:12px;color:var(--text2);margin-bottom:16px;}
+.cfg-section{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.cfg-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.cfg-section h4{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px;}
+.user-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;}
+.user-row .u-name{flex:1;font-size:13px;}
+.user-row .u-role{font-size:11px;color:var(--text2);}
+.danger-zone{background:rgba(248,81,73,.05);border:1px solid rgba(248,81,73,.2);border-radius:var(--radius);padding:16px;}
+.danger-zone h4{color:var(--danger2);}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ════════════════════════════════════════════ -->
+<div id="screen-login">
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="ico">CS</div>
+      <div>
+        <div class="name">CSCO Mesa de Servicio</div>
+        <div class="sub">Centro de Servicios en Comunicación</div>
+      </div>
+    </div>
+    <div class="login-card">
+      <h2>Iniciar sesión</h2>
+      <p class="hint">Acceso exclusivo para personal CSCO</p>
+      <div class="fg">
+        <label>Usuario</label>
+        <input type="text" id="li-user" placeholder="usuario" value="agente">
+      </div>
+      <div class="fg">
+        <label>Contraseña</label>
+        <input type="password" id="li-pass" placeholder="••••••" value="1234"
+               onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()">Entrar</button>
+      <p class="demo-hint">
+        agente / 1234 &nbsp;·&nbsp; supervisor / 1234 &nbsp;·&nbsp; tecnico1 / 1234
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ═══════════════════════════════════════════════ -->
+<div id="screen-app">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-brand">CSCO</div>
+      <span class="tb-sep">/</span>
+      <span class="tb-section">Mesa de Servicio</span>
+      <span class="role-badge" id="tb-role"></span>
+    </div>
+    <div class="tb-right">
+      <span class="tb-user" id="tb-user"></span>
+      <button class="btn-exit" onclick="cargarTickets().then(()=>renderTickets())" style="margin-right:4px;">↻ Actualizar</button>
+      <button class="btn-exit" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <nav class="sidebar" id="sidebar"></nav>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL ══════════════════════════════════════════════ -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<!-- ══ TOAST ═════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ PRINT OT ══════════════════════════════════════════ -->
+<div id="ot-print"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// CONFIGURACIÓN — API GOOGLE SHEETS
+// ══════════════════════════════════════════════════════════
+const API_URL = 'https://script.google.com/macros/s/AKfycbwnUgnQXuS-jhUUKPrjdTfSaEnDgDpU4YrUmZ5WYTlcaTz1Ybk8f4EPsbw3HeUxVcym/exec';
+
+async function apiGet(action, params={}) {
+  try {
+    let url = API_URL + '?action=' + action;
+    Object.entries(params).forEach(([k,v]) => url += '&' + k + '=' + encodeURIComponent(v));
+    const r = await fetch(url);
+    return await r.json();
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+async function apiPost(body) {
+  try {
+    // Enviamos acción y datos como parámetros GET (evita CORS)
+    const action = body.action;
+    // Extraer el objeto de datos según la acción
+    let dataObj = {};
+    if (action === 'crearTicket')      dataObj = body.ticket;
+    if (action === 'actualizarTicket') dataObj = body.ticket;
+    if (action === 'agregarNota')      dataObj = {ticketId: body.ticketId, nota: body.nota};
+    const url = API_URL + '?action=' + action + '&d=' + encodeURIComponent(JSON.stringify(dataObj));
+    const r = await fetch(url);
+    return await r.json();
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// CONFIGURACIÓN — USERS
+// ══════════════════════════════════════════════════════════
+const USERS = {
+  agente:     { pass:'1234', role:'agente',      name:'Recepción / Agente', color:'rb-agente' },
+  supervisor: { pass:'1234', role:'supervisor',  name:'Supervisor',         color:'rb-supervisor' },
+  tecnico1:   { pass:'1234', role:'tecnico',     name:'Técnico 1',          color:'rb-tecnico' },
+  tecnico2:   { pass:'1234', role:'tecnico',     name:'Técnico 2',          color:'rb-tecnico' },
+  tecnico3:   { pass:'1234', role:'tecnico',     name:'Técnico 3',          color:'rb-tecnico' },
+  config:     { pass:'1234', role:'config',      name:'Administrador',      color:'rb-supervisor', hidden:true },
+};
+
+// Lista de técnicos disponibles para asignación
+const TECNICOS = Object.entries(USERS)
+  .filter(([k,v])=>v.role==='tecnico')
+  .map(([k,v])=>({key:k, name:v.name}));
+
+// ══════════════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════════════
+let session = null;
+let tickets  = [];
+let folioNum = 1;
+let osNum    = 1;
+function nuevoOS(){
+  const n = String(osNum++).padStart(4,'0');
+  return 'OS-' + new Date().getFullYear() + '-' + n;
+}
+let activeFilter = 'Todos';
+let activePage   = '';
+
+function nuevoFolio(){
+  const n = String(folioNum++).padStart(4,'0');
+  return 'TKT-' + new Date().getFullYear() + '-' + n;
+}
+function now(){
+  return new Date().toLocaleString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function nota(tipo,texto,autor=''){
+  return {tipo,texto,autor,fecha:now()};
+}
+
+// ══════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════
+async function doLogin(){
+  const u = document.getElementById('li-user').value.trim().toLowerCase();
+  const p = document.getElementById('li-pass').value;
+  const usr = USERS[u];
+  if(!usr || usr.pass!==p){ showToast('Usuario o contraseña incorrectos','err'); return; }
+  session = { key:u, ...usr };
+  document.getElementById('screen-login').style.display='none';
+  document.getElementById('screen-app').style.display='flex';
+  document.getElementById('tb-role').textContent=session.role.toUpperCase();
+  document.getElementById('tb-role').className='role-badge '+session.color;
+  document.getElementById('tb-user').textContent=session.name;
+  buildSidebar();
+  if(session.role==='config'){
+    navTo('config');
+  } else {
+    showToast('Cargando tickets...','ok');
+    await cargarTickets();
+    navTo(session.role==='agente' ? 'nuevo' : 'tickets');
+  }
+}
+
+async function cargarTickets(){
+  const res = await apiGet('getTickets');
+  if(res.ok && Array.isArray(res.data)){
+    tickets = res.data;
+    // Actualizar folioNum local para que no colisione
+    folioNum = tickets.length + 1;
+  } else {
+    showToast('Sin conexión — modo local activado','err');
+  }
+}
+
+function doLogout(){
+  session=null;
+  document.getElementById('screen-login').style.display='flex';
+  document.getElementById('screen-app').style.display='none';
+  document.getElementById('li-pass').value='';
+}
+
+// ══════════════════════════════════════════════════════════
+// SIDEBAR
+// ══════════════════════════════════════════════════════════
+function buildSidebar(){
+  const r = session.role;
+  let nav='';
+  if(r==='agente'){
+    nav=`
+      <div class="nav-group">
+        <div class="nav-label">Tickets</div>
+        <div class="nav-item" id="nav-nuevo" onclick="navTo('nuevo')"><span class="ni-icon">＋</span>Nuevo ticket</div>
+        <div class="nav-item" id="nav-tickets" onclick="navTo('tickets')"><span class="ni-icon">◈</span>Todos los tickets</div>
+      </div>`;
+  } else if(r==='supervisor'){
+    nav=`
+      <div class="nav-group">
+        <div class="nav-label">Panel</div>
+        <div class="nav-item" id="nav-tickets" onclick="navTo('tickets')"><span class="ni-icon">◈</span>Tickets</div>
+        <div class="nav-item" id="nav-nuevo" onclick="navTo('nuevo')"><span class="ni-icon">＋</span>Nuevo ticket</div>
+      </div>`;
+  } else if(r==='config'){
+    nav=`
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <div class="nav-item" id="nav-config" onclick="navTo('config')"><span class="ni-icon">⚙</span>Configuración</div>
+        <div class="nav-item" id="nav-tickets" onclick="navTo('tickets')"><span class="ni-icon">◈</span>Ver tickets</div>
+      </div>`;
+  } else {
+    nav=`
+      <div class="nav-group">
+        <div class="nav-label">Mi trabajo</div>
+        <div class="nav-item" id="nav-tickets" onclick="navTo('tickets')"><span class="ni-icon">◈</span>Mis asignaciones</div>
+      </div>`;
+  }
+  document.getElementById('sidebar').innerHTML=nav;
+}
+
+function navTo(page){
+  activePage=page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('nav-'+page);
+  if(el) el.classList.add('active');
+  if(page==='nuevo')        renderNuevo();
+  else if(page==='tickets') renderTickets();
+  else if(page==='config')  renderConfig();
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER: NUEVO TICKET
+// ══════════════════════════════════════════════════════════
+function renderNuevo(){
+  document.getElementById('content').innerHTML=`
+  <div class="page-header">
+    <div class="page-title">Nuevo ticket de servicio</div>
+  </div>
+  <div class="form-card">
+    <h3>Datos de la solicitud</h3>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Empresa / Cliente *</label>
+        <input type="text" id="f-empresa" placeholder="Nombre de la empresa o cliente">
+      </div>
+      <div class="fg">
+        <label>Persona de contacto *</label>
+        <input type="text" id="f-contacto" placeholder="Nombre de quien reporta">
+      </div>
+      <div class="fg">
+        <label>Teléfono de contacto</label>
+        <input type="text" id="f-tel" placeholder="55 1234 5678">
+      </div>
+      <div class="fg">
+        <label>Correo electrónico</label>
+        <input type="text" id="f-email" placeholder="contacto@empresa.com">
+      </div>
+      <div class="fg">
+        <label>Canal de reporte *</label>
+        <select id="f-canal">
+          <option>Teléfono</option>
+          <option>WhatsApp</option>
+          <option>Correo</option>
+          <option>Visita presencial</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Prioridad *</label>
+        <select id="f-prio">
+          <option value="Alta">🔴 Alta — Sistema o servicio caído</option>
+          <option value="Media" selected>🟡 Media — Afecta la operación</option>
+          <option value="Baja">🟢 Baja — Sin urgencia inmediata</option>
+        </select>
+      </div>
+      <div class="fg form-full">
+        <label>Ubicación / Dirección del servicio</label>
+        <input type="text" id="f-dir" placeholder="Dirección o referencia del lugar donde se realizará el servicio">
+      </div>
+      <div class="fg form-full">
+        <label>Indicaciones especiales para el técnico</label>
+        <input type="text" id="f-indic" placeholder="Ej: Trabajo después de las 10pm, llevar impresora, acceso por caseta norte, solicitar con Ing. García...">
+      </div>
+      <div class="fg form-full">
+        <label>Descripción del problema o solicitud *</label>
+        <textarea id="f-desc" rows="4" placeholder="Describe con detalle qué solicita el cliente, qué equipo está involucrado, desde cuándo ocurre el problema y cualquier dato relevante..."></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ok" onclick="crearTicket()">Crear ticket</button>
+      <button class="btn btn-ghost" onclick="limpiarForm()">Limpiar</button>
+    </div>
+  </div>`;
+}
+
+function limpiarForm(){
+  ['f-empresa','f-contacto','f-tel','f-email','f-dir','f-indic','f-desc'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+}
+
+async function crearTicket(){
+  const empresa  = document.getElementById('f-empresa').value.trim();
+  const contacto = document.getElementById('f-contacto').value.trim();
+  const desc     = document.getElementById('f-desc').value.trim();
+  if(!empresa||!contacto||!desc){
+    showToast('Empresa, contacto y descripción son obligatorios','err'); return;
+  }
+  const t={
+    id:         '',
+    empresa,
+    contacto,
+    tel:        document.getElementById('f-tel').value.trim(),
+    email:      document.getElementById('f-email').value.trim(),
+    canal:      document.getElementById('f-canal').value,
+    prioridad:  document.getElementById('f-prio').value,
+    dir:        document.getElementById('f-dir').value.trim(),
+    indic:      document.getElementById('f-indic').value.trim(),
+    supInstruc: '',
+    desc,
+    estatus:    'Abierto',
+    tecnico:    '',
+    tecnicoName:'',
+    otFolio:    '',
+    otFecha:    '',
+    creadoPor:  session.name,
+    fecha:      now(),
+    notas:[nota('sistema','Ticket creado por '+session.name+'.')]
+  };
+  showToast('Guardando...','ok');
+  const res = await apiPost({ action:'crearTicket', ticket:t });
+  if(res.ok){
+    t.id = res.data.id;
+    tickets.unshift(t);
+    limpiarForm();
+    showToast('Ticket '+t.id+' creado','ok');
+    if(session.role==='supervisor') openModal(t.id);
+  } else {
+    showToast('Error al guardar: '+res.error,'err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER: LISTA TICKETS
+// ══════════════════════════════════════════════════════════
+function renderTickets(){
+  const r = session.role;
+  let lista = tickets;
+  if(r==='tecnico') lista = tickets.filter(t=>t.tecnico===session.key);
+
+  // stats solo para supervisor/agente
+  let statsHtml='';
+  if(r!=='tecnico'){
+    const ab=tickets.filter(t=>t.estatus==='Abierto').length;
+    const pr=tickets.filter(t=>t.estatus==='En proceso').length;
+    const rs=tickets.filter(t=>t.estatus==='Resuelto').length;
+    const cl=tickets.filter(t=>t.estatus==='Cerrado').length;
+    statsHtml=`<div class="stats-row">
+      <div class="stat"><div class="n n-open">${ab}</div><div class="l">Abiertos</div></div>
+      <div class="stat"><div class="n n-prog">${pr}</div><div class="l">En proceso</div></div>
+      <div class="stat"><div class="n n-done">${rs}</div><div class="l">Resueltos</div></div>
+      <div class="stat"><div class="n n-cls">${cl}</div><div class="l">Cerrados</div></div>
+    </div>`;
+  }
+
+  const filtros=['Todos','Abierto','En proceso','Resuelto','Cerrado'];
+  const fhtml=filtros.map(f=>
+    `<button class="fbtn${activeFilter===f?' active':''}" onclick="setFilter('${f}')">${f}</button>`
+  ).join('');
+
+  const filtered = activeFilter==='Todos' ? lista : lista.filter(t=>t.estatus===activeFilter);
+
+  let rows='';
+  if(!filtered.length){
+    rows=`<tr><td colspan="7"><div class="empty"><div class="e-icon">📋</div>Sin tickets en este filtro</div></td></tr>`;
+  } else {
+    rows=filtered.map(t=>`
+      <tr class="tkt-row" onclick="openModal('${t.id}')">
+        <td><div class="folio">${t.id}</div></td>
+        <td>
+          <div class="tkt-title">${t.empresa}</div>
+          <div class="tkt-cliente">${t.contacto}</div>
+        </td>
+        <td style="max-width:240px;color:var(--text2);font-size:12px;">${t.desc.substring(0,70)}${t.desc.length>70?'…':''}</td>
+        <td><span class="badge b-${t.prioridad.toLowerCase()}">${t.prioridad}</span></td>
+        <td><span class="badge b-${statusKey(t.estatus)}">${t.estatus}</span></td>
+        <td style="font-size:12px;color:var(--text2);">${t.tecnicoName||'<span style="color:var(--text3)">Sin asignar</span>'}</td>
+        <td style="font-size:11px;color:var(--text3);font-family:var(--mono);">${t.fecha}</td>
+      </tr>`).join('');
+  }
+
+  const title = r==='tecnico' ? 'Mis asignaciones' : 'Todos los tickets';
+  const addBtn = (r==='agente'||r==='supervisor')
+    ? `<button class="btn btn-ok btn-sm" onclick="navTo('nuevo')">＋ Nuevo ticket</button>` : '';
+
+  document.getElementById('content').innerHTML=`
+    ${statsHtml}
+    <div class="page-header">
+      <div class="page-title">${title}</div>
+      ${addBtn}
+    </div>
+    <div class="filters">${fhtml}</div>
+    <table class="tkt-table">
+      <thead><tr>
+        <th>Folio</th><th>Cliente</th><th>Descripción</th>
+        <th>Prioridad</th><th>Estatus</th><th>Técnico</th><th>Fecha</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function statusKey(s){
+  if(s==='Abierto')    return 'abierto';
+  if(s==='En proceso') return 'proceso';
+  if(s==='Resuelto')   return 'resuelto';
+  return 'cerrado';
+}
+
+function setFilter(f){
+  activeFilter=f;
+  renderTickets();
+}
+
+// ══════════════════════════════════════════════════════════
+// MODAL DETALLE
+// ══════════════════════════════════════════════════════════
+function openModal(id){
+  const t=tickets.find(x=>x.id===id);
+  if(!t) return;
+  const r=session.role;
+
+  // Notas / historial
+  const notasHtml=t.notas.map(n=>`
+    <div class="note note-${n.tipo}">
+      ${n.texto}
+      <div class="note-meta">${n.autor?n.autor+' · ':''}${n.fecha}</div>
+    </div>`).join('');
+
+  // Orden de Trabajo generada
+  let otSection='';
+  if(t.otFolio){
+    otSection=`<div class="m-section">
+      <div class="m-label">Orden de Trabajo</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="badge" style="background:rgba(63,185,80,.1);color:#3fb950;border:1px solid rgba(63,185,80,.2);">${t.otFolio}</span>
+        <span style="font-size:11px;color:var(--text2);">Generada: ${t.otFecha}</span>
+        <button class="btn btn-ghost btn-sm" onclick="imprimirOT('${t.id}')">Ver / Imprimir OT</button>
+      </div>
+    </div>`;
+  }
+
+  // OS ligada
+  let osSection='';
+  if(t.otFolio && false){ // OS display handled in otSection
+    osSection=`<div class="m-section">
+      <div class="m-label">No. de Orden (OT / OS — mismo folio)</div>
+      <span class="badge b-resuelto">${t.otFolio}</span>
+    </div>`;
+  }
+
+  // Controles según rol
+  let controls='';
+
+  if(r==='supervisor'){
+    const otBtn = !t.otFolio
+      ? `<div style="margin-bottom:8px;">
+           <div class="m-label" style="margin-bottom:6px;">Instrucciones del Supervisor para el técnico</div>
+           <textarea id="sup-instruc-${t.id}" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;resize:vertical;min-height:55px;outline:none;display:block;" placeholder="Ej: Llevar switch de respaldo, herramienta de crimpado, coordinar con guardia, trabajo nocturno autorizado..."></textarea>
+         </div>
+         <button class="btn-ot" onclick="generarOT('${t.id}')">⊕ Generar Orden de Trabajo / OS</button>`
+      : `<div style="font-size:11px;color:var(--text3);margin-bottom:8px;">OT/OS ${t.otFolio} generada el ${t.otFecha}</div>`;
+    const osInput = ''; // OS asignada automáticamente al generar OT
+    controls=`
+      <div class="m-controls">
+        <h4>Gestión del ticket</h4>
+        ${t.indic?`<div style="background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.25);border-radius:6px;padding:10px 12px;margin-bottom:12px;color:var(--warn2);font-size:12px;line-height:1.5;"><strong>⚠ Indicaciones especiales:</strong><br>${t.indic}</div>`:''}
+        <div class="fg" style="margin-bottom:12px;">
+          <label>Asignar técnico</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="sel-tec-${t.id}" placeholder="Nombre del técnico" value="${t.tecnicoName||''}"
+              style="flex:1;padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;outline:none;">
+            <button class="btn btn-ok btn-sm" onclick="asignarTecnico('${t.id}')">Asignar</button>
+          </div>
+        </div>
+        ${otBtn}
+        ${osInput}
+        <div class="m-label" style="margin-bottom:8px;">Cambiar estatus</div>
+        <div class="ctrl-row">
+          <button class="btn btn-ghost btn-sm" onclick="cambiarEstatus('${t.id}','En proceso')">▶ En proceso</button>
+          <button class="btn btn-ghost btn-sm" onclick="cambiarEstatus('${t.id}','Resuelto')">✓ Resuelto</button>
+          <button class="btn btn-ghost btn-sm" onclick="cambiarEstatus('${t.id}','Cerrado')">✕ Cerrar</button>
+        </div>
+        <div class="m-label" style="margin-bottom:8px;">Agregar nota</div>
+        <textarea class="fg" id="nota-${t.id}" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;resize:vertical;min-height:60px;outline:none;display:block;" placeholder="Nota interna o actualización..."></textarea>
+        <button class="btn btn-purple btn-sm" style="margin-top:6px;" onclick="agregarNota('${t.id}','supervisor')">Guardar nota</button>
+      </div>`;
+  }
+
+  if(r==='tecnico'){
+    controls=`
+      <div class="m-controls">
+        <h4>Actualizar avance</h4>
+        <div class="ctrl-row">
+          <button class="btn btn-ghost btn-sm" onclick="cambiarEstatus('${t.id}','En proceso')">▶ Iniciar</button>
+          <button class="btn btn-ok btn-sm" onclick="cambiarEstatus('${t.id}','Resuelto')">✓ Trabajo terminado</button>
+        </div>
+        <div class="m-label" style="margin-bottom:8px;">Nota de avance</div>
+        <textarea id="nota-${t.id}" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;resize:vertical;min-height:60px;outline:none;display:block;" placeholder="Describe lo que realizaste, materiales usados, pendientes..."></textarea>
+        <button class="btn btn-ok btn-sm" style="margin-top:6px;" onclick="agregarNota('${t.id}','tecnico')">Guardar nota</button>
+      </div>`;
+  }
+
+  if(r==='agente'){
+    controls=`
+      <div class="m-controls">
+        <h4>Agregar nota</h4>
+        <textarea id="nota-${t.id}" style="width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;resize:vertical;min-height:60px;outline:none;display:block;" placeholder="Información adicional del cliente..."></textarea>
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px;" onclick="agregarNota('${t.id}','agente')">Guardar nota</button>
+      </div>`;
+  }
+
+  document.getElementById('modal-box').innerHTML=`
+    <div class="modal-hdr">
+      <div>
+        <h3>${t.empresa} — ${t.contacto}</h3>
+        <div class="modal-folio">${t.id} · Creado por ${t.creadoPor} · ${t.fecha}</div>
+      </div>
+      <button class="btn-cls" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="m-badges">
+        <span class="badge b-${statusKey(t.estatus)}">${t.estatus}</span>
+        <span class="badge b-${t.prioridad.toLowerCase()}">${t.prioridad}</span>
+        <span class="badge" style="background:var(--s3);color:var(--text2);">📡 ${t.canal}</span>
+        ${t.tecnicoName?`<span class="badge" style="background:rgba(35,134,54,.1);color:#3fb950;">👤 ${t.tecnicoName}</span>`:''}
+      </div>
+      <div class="m-grid">
+        <div class="m-section">
+          <div class="m-label">Teléfono</div>
+          <div class="m-val">${t.tel||'—'}</div>
+        </div>
+        <div class="m-section">
+          <div class="m-label">Correo</div>
+          <div class="m-val">${t.email||'—'}</div>
+        </div>
+      </div>
+      ${t.dir?`<div class="m-section"><div class="m-label">Ubicación</div><div class="m-val">${t.dir}</div></div>`:''}
+      ${t.indic?`<div class="m-section"><div class="m-val" style="background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.2);border-radius:6px;padding:8px 12px;color:var(--warn2);font-size:13px;">⚠ Indicaciones del cliente: ${t.indic}</div></div>`:''}
+      ${t.supInstruc?`<div class="m-section"><div class="m-val" style="background:rgba(110,64,201,.08);border:1px solid rgba(110,64,201,.2);border-radius:6px;padding:8px 12px;color:var(--purple2);font-size:13px;">📋 Instrucciones del Supervisor: ${t.supInstruc}</div></div>`:''}
+      <div class="m-section">
+        <div class="m-label">Descripción del problema</div>
+        <div class="m-box">${t.desc}</div>
+      </div>
+      ${otSection}${osSection}
+      <div class="history">
+        <h4>Historial de actividad</h4>
+        ${notasHtml}
+      </div>
+      ${controls}
+    </div>`;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('overlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════════════════
+// ACCIONES
+// ══════════════════════════════════════════════════════════
+async function asignarTecnico(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  const sel=document.getElementById('sel-tec-'+id);
+  const nombre=sel.value.trim();
+  if(!nombre){ showToast('Escribe el nombre del técnico','err'); return; }
+  t.tecnico=nombre.toLowerCase().replace(/\s+/g,'_');
+  t.tecnicoName=nombre;
+  const n1=nota('supervisor','Ticket asignado a '+t.tecnicoName+'.', session.name);
+  t.notas.push(n1);
+  if(t.estatus==='Abierto'){
+    t.estatus='En proceso';
+    const n2=nota('sistema','Estatus cambiado a En proceso.');
+    t.notas.push(n2);
+    await apiPost({action:'agregarNota', ticketId:id, nota:n2});
+  }
+  await apiPost({action:'actualizarTicket', ticket:t});
+  await apiPost({action:'agregarNota', ticketId:id, nota:n1});
+  showToast('Asignado a '+t.tecnicoName,'ok');
+  openModal(id);
+  if(activePage==='tickets') renderTickets();
+}
+
+async function generarOT(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  if(!t.tecnico){ showToast('Asigna un técnico antes de generar la OT','err'); return; }
+  t.otFolio = t.id.replace('TKT-','OT-');
+  t.otFecha = now();
+  const instrEl = document.getElementById('sup-instruc-'+id);
+  if(instrEl && instrEl.value.trim()) t.supInstruc = instrEl.value.trim();
+  const n=nota('supervisor','OT/OS '+t.otFolio+' generada.', session.name);
+  t.notas.push(n);
+  await apiPost({action:'actualizarTicket', ticket:t});
+  await apiPost({action:'agregarNota', ticketId:id, nota:n});
+  showToast('OT/OS '+t.otFolio+' generada','ok');
+  openModal(id);
+}
+
+function ligarOS(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  const val=document.getElementById('os-input-'+id).value.trim();
+  if(!val){ showToast('Ingresa el número de OS','err'); return; }
+  t.osFolio=val;
+  t.notas.push(nota('supervisor','Orden de Servicio '+val+' ligada al ticket.', session.name));
+  showToast('OS '+val+' ligada','ok');
+  openModal(id);
+}
+
+async function cambiarEstatus(id,nuevo){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  t.estatus=nuevo;
+  const n=nota('sistema','Estatus cambiado a "'+nuevo+'" por '+session.name+'.');
+  t.notas.push(n);
+  await apiPost({action:'actualizarTicket', ticket:t});
+  await apiPost({action:'agregarNota', ticketId:id, nota:n});
+  showToast('Estatus: '+nuevo,'ok');
+  openModal(id);
+  if(activePage==='tickets') renderTickets();
+}
+
+async function agregarNota(id,tipo){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  const el=document.getElementById('nota-'+id);
+  const txt=el.value.trim();
+  if(!txt){ showToast('Escribe una nota','err'); return; }
+  const n=nota(tipo,txt,session.name);
+  t.notas.push(n);
+  await apiPost({action:'agregarNota', ticketId:id, nota:n});
+  el.value='';
+  showToast('Nota guardada','ok');
+  openModal(id);
+}
+
+// ══════════════════════════════════════════════════════════
+// IMPRIMIR ORDEN DE TRABAJO
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// RENDER: CONFIG
+// ══════════════════════════════════════════════════════════
+function renderConfig(){
+  const usuariosHtml = Object.entries(USERS)
+    .filter(([k,v])=>!v.hidden)
+    .map(([k,v])=>`
+      <div class="user-row">
+        <div class="u-name">${v.name}</div>
+        <div class="u-role">${k} · ${v.role}</div>
+        <input type="password" id="pwd-${k}" placeholder="Nueva contraseña" style="width:160px;padding:5px 8px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:var(--font);font-size:12px;outline:none;">
+        <button class="btn btn-ghost btn-sm" onclick="cambiarPassword('${k}')">Cambiar</button>
+      </div>`).join('');
+
+  document.getElementById('content').innerHTML=`
+    <div class="page-header">
+      <div class="page-title">Panel de Configuración</div>
+    </div>
+
+    <div class="cfg-card">
+      <h3>Usuarios del sistema</h3>
+      <p class="hint">Cambia las contraseñas de cada usuario. Los cambios aplican hasta que se recargue la página.</p>
+      <div class="cfg-section">
+        <h4>Usuarios activos</h4>
+        ${usuariosHtml}
+      </div>
+    </div>
+
+    <div class="cfg-card">
+      <h3>Base de datos</h3>
+      <p class="hint">Operaciones sobre los datos del sistema.</p>
+      <div class="cfg-section">
+        <h4>Estadísticas</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;" id="cfg-stats">
+          <div class="stat"><div class="n" style="color:var(--text2);font-size:20px;" id="cfg-total">—</div><div class="l">Total tickets</div></div>
+          <div class="stat"><div class="n n-open" style="font-size:20px;" id="cfg-abiertos">—</div><div class="l">Abiertos</div></div>
+          <div class="stat"><div class="n n-done" style="font-size:20px;" id="cfg-cerrados">—</div><div class="l">Cerrados</div></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="cargarEstadisticas()">↻ Actualizar estadísticas</button>
+      </div>
+      <div class="cfg-section danger-zone">
+        <h4>⚠ Zona de peligro</h4>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">Estas acciones no se pueden deshacer. Úsalas solo para reiniciar el sistema después de pruebas.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-danger btn-sm" onclick="confirmarReset('tickets')">Borrar todos los tickets</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmarReset('folioNum')">Reiniciar contador de folios</button>
+          <button class="btn btn-danger btn-sm" onclick="confirmarReset('todo')">Reiniciar todo el sistema</button>
+        </div>
+      </div>
+    </div>`;
+
+  cargarEstadisticas();
+}
+
+async function cargarEstadisticas(){
+  const res = await apiGet('getTickets');
+  if(res.ok){
+    const t = res.data;
+    document.getElementById('cfg-total').textContent    = t.length;
+    document.getElementById('cfg-abiertos').textContent = t.filter(x=>x.estatus==='Abierto'||x.estatus==='En proceso').length;
+    document.getElementById('cfg-cerrados').textContent = t.filter(x=>x.estatus==='Cerrado'||x.estatus==='Resuelto').length;
+  }
+}
+
+function cambiarPassword(userKey){
+  const el = document.getElementById('pwd-'+userKey);
+  const nueva = el.value.trim();
+  if(!nueva){ showToast('Escribe la nueva contraseña','err'); return; }
+  USERS[userKey].pass = nueva;
+  el.value='';
+  showToast('Contraseña de '+USERS[userKey].name+' actualizada','ok');
+}
+
+async function confirmarReset(tipo){
+  const msgs = {
+    tickets:   '¿Borrar TODOS los tickets y notas? Esta acción no se puede deshacer.',
+    folioNum:  '¿Reiniciar el contador de folios a 1?',
+    todo:      '¿Reiniciar TODO el sistema? Se borrarán tickets, notas y el contador.',
+  };
+  if(!confirm(msgs[tipo])) return;
+  showToast('Procesando...','ok');
+  const res = await apiGet('reset', {tipo});
+  if(res.ok){
+    tickets=[];
+    showToast('Sistema reiniciado correctamente','ok');
+    cargarEstadisticas();
+  } else {
+    showToast('Error: '+res.error,'err');
+  }
+}
+
+function imprimirOT(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  const otHtml=`<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<title>${t.otFolio}</title>
+<style>
+  @page{size:letter portrait;margin:15mm 18mm 15mm 18mm;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;font-size:11px;color:#111;background:#fff;}
+  /* ── ENCABEZADO ── */
+  .hdr{display:flex;justify-content:space-between;align-items:stretch;
+       border:2px solid #1a5276;border-radius:4px;margin-bottom:12px;overflow:hidden;}
+  .hdr-logo{background:#1a5276;color:#fff;padding:10px 16px;min-width:180px;display:flex;flex-direction:column;justify-content:center;}
+  .hdr-logo .co{font-size:15px;font-weight:700;letter-spacing:-.3px;}
+  .hdr-logo .sub{font-size:9px;opacity:.8;margin-top:2px;line-height:1.4;}
+  .hdr-center{flex:1;padding:10px 16px;border-left:1px solid #d0dce8;border-right:1px solid #d0dce8;}
+  .hdr-center .tit{font-size:16px;font-weight:700;color:#1a5276;letter-spacing:.5px;}
+  .hdr-center .web{font-size:9px;color:#666;margin-top:3px;}
+  .hdr-right{padding:10px 16px;text-align:right;min-width:130px;display:flex;flex-direction:column;justify-content:center;}
+  .hdr-right .folio{font-size:18px;font-weight:700;color:#1a5276;font-family:'Courier New',monospace;}
+  .hdr-right .sub{font-size:9px;color:#888;margin-top:2px;}
+  .hdr-right .fecha{font-size:9px;color:#555;margin-top:4px;}
+  /* ── DATOS GENERALES ── */
+  .section{margin-bottom:10px;}
+  .sec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+             color:#fff;background:#1a5276;padding:4px 10px;border-radius:3px 3px 0 0;}
+  .sec-body{border:1px solid #c8d8e8;border-top:none;border-radius:0 0 3px 3px;padding:8px 10px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 16px;}
+  .field{margin-bottom:4px;}
+  .field label{font-size:8.5px;font-weight:700;text-transform:uppercase;color:#555;
+               letter-spacing:.3px;display:block;margin-bottom:2px;}
+  .field .val{border-bottom:1px solid #bbb;padding-bottom:3px;min-height:16px;
+              font-size:11px;color:#111;line-height:1.3;}
+  .field .val.empty{color:#aaa;font-style:italic;}
+  /* ── ALERTA INDICACIONES ── */
+  .alert-indic{background:#fff3cd;border:1.5px solid #f9a825;border-radius:4px;
+               padding:7px 10px;margin-bottom:10px;}
+  .alert-indic .a-title{font-size:9px;font-weight:700;text-transform:uppercase;
+                        color:#b45309;letter-spacing:.4px;margin-bottom:3px;}
+  .alert-indic .a-body{font-size:11px;color:#713f12;line-height:1.4;}
+  /* instrucciones supervisor */
+  .alert-sup{background:#ede9fe;border:1.5px solid #7c3aed;border-radius:4px;
+             padding:7px 10px;margin-bottom:10px;}
+  .alert-sup .a-title{font-size:9px;font-weight:700;text-transform:uppercase;
+                      color:#5b21b6;letter-spacing:.4px;margin-bottom:3px;}
+  .alert-sup .a-body{font-size:11px;color:#3b0764;line-height:1.4;}
+  /* ── DESCRIPCION ── */
+  .desc-box{border:1px solid #c8d8e8;border-radius:3px;padding:8px 10px;
+            min-height:52px;font-size:11px;line-height:1.6;color:#222;background:#fafcff;}
+  /* ── TABLAS TECNICO ── */
+  .work-table{width:100%;border-collapse:collapse;margin-bottom:10px;}
+  .work-table th{background:#eef4fb;font-size:9px;font-weight:700;text-transform:uppercase;
+                 letter-spacing:.3px;color:#1a5276;padding:5px 8px;
+                 border:1px solid #c8d8e8;text-align:left;}
+  .work-table td{border:1px solid #d5e3ee;padding:5px 8px;font-size:10px;color:#333;}
+  .work-table .empty-row td{height:20px;}
+  /* ── FIRMAS ── */
+  .firmas{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:12px;}
+  .firma-box{border:1px solid #c8d8e8;border-radius:4px;padding:8px 10px;}
+  .firma-box .f-title{font-size:8.5px;font-weight:700;text-transform:uppercase;color:#1a5276;
+                      letter-spacing:.4px;margin-bottom:8px;padding-bottom:4px;
+                      border-bottom:1px solid #c8d8e8;}
+  .firma-box .f-line{border-bottom:1px solid #aaa;height:28px;margin-bottom:4px;}
+  .firma-box .f-label{font-size:8px;color:#888;}
+  /* ── PIE ── */
+  .footer{margin-top:10px;padding-top:6px;border-top:1px solid #ddd;
+          display:flex;justify-content:space-between;font-size:8px;color:#aaa;}
+  @media print{
+    body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+</style></head><body>
+
+<!-- ENCABEZADO -->
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="co">CSCO</div>
+    <div class="sub">Centro de Servicios en<br>Comunicación s.a. de c.v.</div>
+  </div>
+  <div class="hdr-center">
+    <div class="tit">ORDEN DE TRABAJO / SERVICIO</div>
+    <div class="web">Nubia #112, Col. Claveria, Azcapotzalco, CDMX &nbsp;|&nbsp; Tel. 49973448 &nbsp;|&nbsp; www.csco.mx</div>
+  </div>
+  <div class="hdr-right">
+    <div class="folio">${t.otFolio}</div>
+    <div class="sub">Ticket origen: ${t.id}</div>
+    <div class="fecha">Emitida: ${t.otFecha}</div>
+  </div>
+</div>
+
+<!-- ALERTAS -->
+${t.indic ? `<div class="alert-indic"><div class="a-title">⚠ Indicaciones especiales del cliente</div><div class="a-body">${t.indic}</div></div>` : ''}
+${t.supInstruc ? `<div class="alert-sup"><div class="a-title">📋 Instrucciones del Supervisor</div><div class="a-body">${t.supInstruc}</div></div>` : ''}
+
+<!-- DATOS DEL CLIENTE Y SERVICIO -->
+<div class="section">
+  <div class="sec-title">Datos del cliente y servicio</div>
+  <div class="sec-body">
+    <div class="grid2" style="margin-bottom:6px;">
+      <div class="field"><label>Empresa / Cliente</label><div class="val">${t.empresa}</div></div>
+      <div class="field"><label>Persona de contacto</label><div class="val">${t.contacto}</div></div>
+      <div class="field"><label>Teléfono</label><div class="val">${t.tel||'—'}</div></div>
+      <div class="field"><label>Correo electrónico</label><div class="val">${t.email||'—'}</div></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Dirección / Ubicación</label><div class="val">${t.dir||'—'}</div></div>
+      <div class="field"><label>Canal de reporte</label><div class="val">${t.canal}</div></div>
+      <div class="field"><label>Prioridad</label><div class="val">${t.prioridad}</div></div>
+      <div class="field"><label>Técnico asignado</label><div class="val">${t.tecnicoName}</div></div>
+      <div class="field"><label>Fecha de solicitud</label><div class="val">${t.fecha}</div></div>
+      <div class="field"><label>Fecha compromiso</label><div class="val" style="min-height:16px;"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DESCRIPCION -->
+<div class="section">
+  <div class="sec-title">Descripción del trabajo a realizar</div>
+  <div class="sec-body">
+    <div class="desc-box">${t.desc}</div>
+  </div>
+</div>
+
+<!-- MATERIALES -->
+<div class="section">
+  <div class="sec-title">Materiales y equipo a utilizar &nbsp;<span style="font-weight:400;font-size:8px;opacity:.8">(completar antes de salir)</span></div>
+  <div class="sec-body" style="padding:0;">
+    <table class="work-table">
+      <thead><tr><th style="width:40px;">#</th><th>Material / Equipo</th><th style="width:160px;">No. Serie / Parte</th><th style="width:60px;">Cantidad</th></tr></thead>
+      <tbody>
+        ${[1,2,3,4,5,6].map(n=>`<tr class="empty-row"><td style="color:#ccc;text-align:center;">${n}</td><td></td><td></td><td></td></tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OBSERVACIONES TECNICO -->
+<div class="section">
+  <div class="sec-title">Observaciones del técnico &nbsp;<span style="font-weight:400;font-size:8px;opacity:.8">(completar al terminar)</span></div>
+  <div class="sec-body">
+    <div class="desc-box" style="min-height:44px;"></div>
+    <div style="display:flex;gap:20px;margin-top:8px;font-size:10px;">
+      <span>Servicio concluido: &nbsp; SI &nbsp;[ ] &nbsp;&nbsp; NO &nbsp;[ ]</span>
+      <span>Faltan actividades: &nbsp; SI &nbsp;[ ] &nbsp;&nbsp; NO &nbsp;[ ]</span>
+    </div>
+  </div>
+</div>
+
+<!-- FIRMAS -->
+<div class="firmas">
+  <div class="firma-box">
+    <div class="f-title">Elaboró / Supervisor</div>
+    <div class="f-line"></div><div class="f-label">Nombre y firma</div>
+    <div class="f-line" style="margin-top:8px;height:18px;"></div><div class="f-label">Fecha de emisión</div>
+  </div>
+  <div class="firma-box">
+    <div class="f-title">Técnico responsable</div>
+    <div class="f-line"></div><div class="f-label">Nombre y firma</div>
+    <div class="f-line" style="margin-top:8px;height:18px;"></div><div class="f-label">Fecha y hora de inicio</div>
+  </div>
+  <div class="firma-box">
+    <div class="f-title">Recibido conforme — Cliente</div>
+    <div class="f-line"></div><div class="f-label">Nombre y firma</div>
+    <div class="f-line" style="margin-top:8px;height:18px;"></div><div class="f-label">Fecha &nbsp;&nbsp;&nbsp; Sello</div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>FOR-002  Rev.01 &nbsp;|&nbsp; Orden de Trabajo / Servicio CSCO &nbsp;|&nbsp; SGC ISO 9001:2015</span>
+  <span>Generada: ${t.otFecha} &nbsp;|&nbsp; ${t.otFolio}</span>
+</div>
+
+<script>
+  window.onload = function(){
+    document.title = '${t.otFolio}';
+    setTimeout(function(){ window.print(); }, 400);
+  };
+<\/script>
+
+</script>
+<script>
+const ICON_192 = './icon.png';
+const ICON_512 = './icon.png';
+
+// Favicon
+const favicon = document.createElement('link');
+favicon.rel = 'icon'; favicon.type = 'image/png'; favicon.href = ICON_192;
+document.head.appendChild(favicon);
+
+// Apple touch icon
+const apple = document.createElement('link');
+apple.rel = 'apple-touch-icon'; apple.href = ICON_192;
+document.head.appendChild(apple);
+
+// Manifest
+const manifest = {
+  name: 'CSCO Mesa de Servicio',
+  short_name: 'CSCO Mesa',
+  start_url: './',
+  display: 'standalone',
+  background_color: '#0d1117',
+  theme_color: '#1a5276',
+  icons: [
+    { src: ICON_192, sizes: '192x192', type: 'image/png' },
+    { src: ICON_512, sizes: '512x512', type: 'image/png' }
+  ]
+};
+const mblob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+const mlink = document.createElement('link');
+mlink.rel = 'manifest'; mlink.href = URL.createObjectURL(mblob);
+document.head.appendChild(mlink);
+</script>
+</body></html>`;
+
+  const blob = new Blob([otHtml], {type:'text/html;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = t.otFolio + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+  showToast('OT descargada — ábrela para imprimir','ok');
+}
+
+// ══════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════
+function showToast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=(type==='ok'?'✓ ':'✕ ')+msg;
+  el.className='toast t-'+type+' show';
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+// Tickets cargados desde Google Sheets al hacer login
+tickets=[];
+folioNum=1;
+osNum=1;
+</script>
+<script>
+const ICON_192 = './icon.png';
+const ICON_512 = './icon.png';
+
+// Favicon
+const favicon = document.createElement('link');
+favicon.rel = 'icon'; favicon.type = 'image/png'; favicon.href = ICON_192;
+document.head.appendChild(favicon);
+
+// Apple touch icon
+const apple = document.createElement('link');
+apple.rel = 'apple-touch-icon'; apple.href = ICON_192;
+document.head.appendChild(apple);
+
+// Manifest
+const manifest = {
+  name: 'CSCO Mesa de Servicio',
+  short_name: 'CSCO Mesa',
+  start_url: './',
+  display: 'standalone',
+  background_color: '#0d1117',
+  theme_color: '#1a5276',
+  icons: [
+    { src: ICON_192, sizes: '192x192', type: 'image/png' },
+    { src: ICON_512, sizes: '512x512', type: 'image/png' }
+  ]
+};
+const mblob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+const mlink = document.createElement('link');
+mlink.rel = 'manifest'; mlink.href = URL.createObjectURL(mblob);
+document.head.appendChild(mlink);
+</script>
+</body>
+</html>
